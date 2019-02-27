@@ -11,8 +11,18 @@ let vendorcollection = mongoose.Schema({
     type: String,
     required: true
   },
+  email:{
+    type: String,
+    required: true
+  },
+  remark:{
+    type: String
+  },
   date:{
     type: Date
+  },
+  projectid: {
+    type: []
   }
 });
 

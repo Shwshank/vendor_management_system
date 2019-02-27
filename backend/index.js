@@ -5,6 +5,7 @@ const morgan = require('morgan')
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const multer  = require('multer')
+const password_generator = require('generate-password');
 const _ = require('lodash');
 
 const adminCollection = require('./vms_db_model/adminCollection');
@@ -30,15 +31,15 @@ db.once('open',()=>{
   console.log('Connected to db');
 })
 
+mongoose.set('useCreateIndex', true);
+
 app.use(bodyParser.json());
 app.use(morgan('dev'))
 
-const params = (app, adminCollection, vendorCollection, projectCollection, projectUserCollection, bcrypt, saltRounds, jwt, _);
+const params = (app, adminCollection, vendorCollection, projectCollection, projectUserCollection, bcrypt, saltRounds, jwt, _, password_generator);
 
-// testAPI(params);
-adminAPI(app, adminCollection, vendorCollection, projectCollection, projectUserCollection, bcrypt, saltRounds, jwt, _);
-// vendorAPI(params);
-// projectAPI(params);
-// projectUserAPI(params);
+adminAPI(app, adminCollection, vendorCollection, projectCollection, projectUserCollection, bcrypt, saltRounds, jwt, _, password_generator);
+
+// testAPI(app, adminCollection, vendorCollection, projectCollection, projectUserCollection, bcrypt, saltRounds, jwt, _);
 
 app.listen(port, () => console.log(`vms listening on port ${port}`))
