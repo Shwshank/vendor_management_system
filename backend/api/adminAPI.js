@@ -79,7 +79,7 @@ module.exports = (app, adminCollection, vendorCollection, projectCollection, pro
 
     } else {
 
-      adminCollection.findOne({name: request.body.name}).then(vres=>{
+      vendorCollection.findOne({name: request.body.name}).then(vres=>{
         if(vres) response.json({message: "Vendor is registered with same name"})
 
         else {
@@ -88,10 +88,16 @@ module.exports = (app, adminCollection, vendorCollection, projectCollection, pro
             else{
               // create new vendor
 
-              var newPassword = password_generator.generate({
-                  length: 10,
-                  numbers: true
-              });
+              // generates random password
+              // uncomment at production
+
+              // var newPassword = password_generator.generate({
+              //     length: 10,
+              //     numbers: true
+              // });
+
+              var newPassword = "1234";
+
               var date = new Date();
               date = date.toISOString()
 
@@ -119,6 +125,159 @@ module.exports = (app, adminCollection, vendorCollection, projectCollection, pro
         }
       })
     }
+  })
+
+  app.post('/adminCreateProjectUser', (request, response) =>{
+    validKeyArray = ["name", "email", "remark", "projectid", "board"]
+
+    if(!checkRequest(validKeyArray, request.body)) {
+      console.log(request.body);
+      response.json({message: "Malformed request body"});
+
+    } else {
+
+      projectUserCollection.findOne({name: request.body.name}).then(vres=>{
+        if(vres) response.json({message: "Another user is registered with same name"})
+
+        else {
+          projectUserCollection.findOne({email: request.body.email}).then(vres1=>{
+            if(vres1) response.json({message: "Another user is registered with same email"})
+            else{
+              // create new vendor
+
+              // var newPassword = password_generator.generate({
+              //     length: 10,
+              //     numbers: true
+              // });
+
+              var newPassword = "1234";
+
+              var date = new Date();
+              date = date.toISOString()
+
+              var hashed = bcrypt.hash(newPassword,saltRounds)
+
+              let createUser = async () =>{
+                new projectUserCollection({
+                  name: request.body.name,
+                  password: await hashed,
+                  email: request.body.email,
+                  remark: request.body.remark,
+                  date: date,
+                  board: request.body.board,
+                  projectid: request.body.projectid
+                }).save().then(resp1=>{
+                  console.log(resp1);
+                  response.json({message:"Project user created"})
+                }, err=>{
+                  console.log(err);
+                })
+              }
+
+              createUser();
+            }
+          })
+        }
+      })
+
+    }
+  });
+
+  app.post('/adminCreateProject', (request, response) =>{
+    validKeyArray = ["name", "startDate", "complitionDate", "cost", "changeRequest", "remark", "vendor", "projectUser"]
+
+    if(!checkRequest(validKeyArray, request.body)) {
+      console.log(request.body);
+      response.json({message: "Malformed request body."});
+
+    } else {
+      console.log(request.body);
+      projectCollection.findOne({name: request.body.name}).then(vres=>{
+        if(vres) response.json({message: "Another project is registered with same name"})
+
+        else {
+          startDate = "";
+          complitiondate = "";
+          if(request.body.startDate) {
+            startDate = new Date(request.body.startDate)
+            startDate = startDate.toISOString();
+          }
+          if(request.body.complitionDate) {
+            complitiondate = new Date(request.body.complitionDate)
+            complitiondate = complitiondate.toISOString();
+          }
+
+          db_result = new projectCollection({
+            name: request.body.name,
+            startDate: startDate,
+            complitiondate: complitiondate,
+            cost: request.body.cost,
+            remark: request.body.remark,
+            changerequest: request.body.changeRequest,
+            vendor: request.body.vendor,
+            projectuser: request.body.projectUser
+          }).save()
+
+          fun = async ()=>{
+            result_db =  await db_result;
+            // console.log(result_db);
+            response.json({message: "Project created"})
+          }
+          fun()
+        }
+      });
+    }
+
+  });
+
+  app.post('/adminAssignProject', (request, response) =>{
+    validKeyArray = ["projectId"];
+    // console.log(request.body);
+
+    if(!checkRequest(validKeyArray, request.body)) {
+      console.log(request.body);
+      response.json({message: "Malformed request body."});
+    } else {
+
+      projectCollection.findById(request.body.projectId).then(res=>{
+        // console.log(res)
+        var message = ""
+        if(request.body.userId) {
+          projectCollection.findByIdAndUpdate(
+            {_id: request.body.projectId},
+            {$addToSet: {projectuser: request.body.userId}},
+            {new: false},
+            (err, doc) =>{
+              if(err) console.log("err "+err)
+              else {
+                message = "User added "
+                console.log("updated ");
+              }
+            }
+          )
+        }
+
+        if(request.body.vendorId) {
+          projectCollection.findByIdAndUpdate(
+            {_id: request.body.projectId},
+            {$addToSet: {vendor: request.body.vendorId}},
+            {new: false},
+            (err, doc) =>{
+              if(err) console.log("err "+err)
+              else {
+                message += "Vendor added "
+                console.log("updated ");
+                response.json({message: message})
+              }
+            }
+          )
+        }
+
+        else response.json({message: "Unable to add user/ vendor"})
+
+      }, error=>response.json({message: "Project Id not found."}))
+    }
+
   })
 
   checkRequest = (validKeyArray, requestBody) =>{

@@ -40,6 +40,10 @@ const params = (app, adminCollection, vendorCollection, projectCollection, proje
 
 adminAPI(app, adminCollection, vendorCollection, projectCollection, projectUserCollection, bcrypt, saltRounds, jwt, _, password_generator);
 
+vendorAPI(app, adminCollection, vendorCollection, projectCollection, projectUserCollection, bcrypt, saltRounds, jwt, _, password_generator);
+
+projectUserAPI(app, adminCollection, vendorCollection, projectCollection, projectUserCollection, bcrypt, saltRounds, jwt, _, password_generator);
+
 // testAPI(app, adminCollection, vendorCollection, projectCollection, projectUserCollection, bcrypt, saltRounds, jwt, _);
 
 app.listen(port, () => console.log(`vms listening on port ${port}`))

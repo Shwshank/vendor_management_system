@@ -11,8 +11,22 @@ let projectusercollection = mongoose.Schema({
     type: String,
     required: true
   },
+  email:{
+    type: String,
+    required: true,
+    unique: true
+  },
+  remark:{
+    type: String
+  },
   date:{
     type: Date
+  },
+  board: {
+    type: String
+  },
+  projectid: {
+    type: []
   }
 });
 

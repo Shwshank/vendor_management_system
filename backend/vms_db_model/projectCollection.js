@@ -1,19 +1,35 @@
 const mongoose = require('mongoose');
 
 // Article Schema
-let projectcollection = mongoose.Schema({
+let projectCollection = mongoose.Schema({
   name:{
     type: String,
     required: true,
     unique: true
   },
-  password:{
+  startdate:{
+    type: Date
+  },
+  complitiondate:{
+    type: Date
+  },
+  cost:{
     type: String,
     required: true
   },
-  date:{
-    type: Date
+  remark:{
+    type: String
+  },
+  changerequest:{
+    type: [],
+    unique: true
+  },
+  vendor:{
+    type: []
+  },
+  projectuser:{
+    type: []
   }
 });
 
-module.exports = mongoose.model('projectcollection', projectcollection);
+module.exports = mongoose.model('projectCollection', projectCollection);
