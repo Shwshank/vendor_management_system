@@ -184,7 +184,7 @@ module.exports = (app, adminCollection, vendorCollection, projectCollection, pro
   });
 
   app.post('/adminCreateProject', (request, response) =>{
-    validKeyArray = ["name", "startDate", "complitionDate", "cost", "changeRequest", "remark", "vendor", "projectUser"]
+    validKeyArray = ["name", "startDate", "complitionDate", "cost", "remark", "vendor", "projectUser"]
 
     if(!checkRequest(validKeyArray, request.body)) {
       console.log(request.body);
@@ -209,11 +209,10 @@ module.exports = (app, adminCollection, vendorCollection, projectCollection, pro
 
           db_result = new projectCollection({
             name: request.body.name,
-            startDate: startDate,
+            startdate: startDate,
             complitiondate: complitiondate,
             cost: request.body.cost,
             remark: request.body.remark,
-            changerequest: request.body.changeRequest,
             vendor: request.body.vendor,
             projectuser: request.body.projectUser
           }).save()
@@ -223,6 +222,7 @@ module.exports = (app, adminCollection, vendorCollection, projectCollection, pro
             // console.log(result_db);
             response.json({message: "Project created"})
           }
+
           fun()
         }
       });
@@ -278,6 +278,32 @@ module.exports = (app, adminCollection, vendorCollection, projectCollection, pro
       }, error=>response.json({message: "Project Id not found."}))
     }
 
+  })
+
+  app.post('/adminDeleteProjectChangeRequest', (request, response) =>{
+    validKeyArray = ["projectId"];
+
+    if(!checkRequest(validKeyArray, request.body)) {
+      console.log(request.body);
+      response.json({message: "Malformed request body."});
+    } else {
+      projectCollection.findByIdAndUpdate(
+        {_id: request.body.projectId},
+        {changerequest: [] },
+        {new: false}
+      ).then(res01=> {
+        if(res01) {
+          console.log(res01);
+          response.json({message: "Change request deleted"});
+        } else {
+          response.json({message: "Unalbe to delete change request"});
+        }
+
+      }, err=> {
+        console.log(err);
+        response.json({message: "Unalbe to delete change request"});
+      })
+    }
   })
 
   checkRequest = (validKeyArray, requestBody) =>{

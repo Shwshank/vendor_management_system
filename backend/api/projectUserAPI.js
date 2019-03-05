@@ -103,6 +103,61 @@ module.exports = (app, adminCollection, vendorCollection, projectCollection, pro
     })
   });
 
+  app.get('/userUpdateChangeRequestComment', (request, response) =>{
+    validKeyArray = ["projectId", "cr_id", "userName", "userId", "userComment"];
+
+    if(!checkRequest(validKeyArray, request.body)) {
+      console.log(request.body);
+      response.json({message: "Malformed request body."});
+    } else {
+
+      projectCollection.findOne({_id: request.body.projectId}).then(res01=>{
+        console.log(res01);
+        if(!res01) response.json({message: "Change request not found"});
+        var changeRequest = res01.changerequest;
+
+        // search index of change request
+        var index = _.findIndex(changeRequest, { 'cr_id': request.body.cr_id });
+        console.log(index);
+
+        // if index not found, index will be -1
+        if(index > -1){
+          console.log(changeRequest[index].status);
+          if(changeRequest[index].status === "Complete" ) {
+            response.json({message: "Unable to update as status of the change request is "+changeRequest[index].status});
+          } else {
+
+            // update data
+            changeRequest[index].projectuesrid = request.body.uesrId;
+            changeRequest[index].projectuesrname = request.body.userName;
+            changeRequest[index].projectuesrcomment = request.body.userComment;
+            changeRequest[index].status = "Reviewing";
+
+            projectCollection.findByIdAndUpdate(
+              {_id: request.body.projectId},
+              {changerequest: changeRequest },
+              {new: false}
+            ).then(res01=> {
+              console.log(res01);
+              response.json({message: "Change request updated"});
+            }, err=> {
+              console.log(err);
+              response.json({message: "Unalbe to update change request"});
+            })
+
+          }
+
+        } else {
+          response.json({message: "Change Request not found"});
+        }
+
+      }, err=>{
+        console.log(err);
+      })
+
+    }
+  })
+
   checkRequest = (validKeyArray, requestBody) =>{
     return validKeyArray.every(key => Object.keys(requestBody).includes(key))
   }
